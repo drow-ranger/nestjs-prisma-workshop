@@ -11,35 +11,47 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @ApiOkResponse({ type: [ProductEntity] })
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+  @ApiCreatedResponse({ type: ProductEntity })
+  async create(@Body() createProductDto: CreateProductDto) {
+    return new ProductEntity(
+      await this.productsService.create(createProductDto),
+    );
   }
 
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  @ApiOkResponse({ type: [ProductEntity] })
+  async findAll() {
+    const products = await this.productsService.findAll();
+    return products.map((product) => new ProductEntity(product));
+  }
+
+  @Get('drafts')
+  @ApiOkResponse({ type: [ProductEntity] })
+  async findDrafts() {
+    const drafts = await this.productsService.findDrafts();
+    return drafts.map((product) => new ProductEntity(product));
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+  @ApiOkResponse({ type: ProductEntity })
+  async findOne(@Param('id') id: string) {
+    return new ProductEntity(await this.productsService.findOne(id));
   }
 
   @Patch(':id')
   @ApiCreatedResponse({ type: ProductEntity })
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(id, updateProductDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    return new ProductEntity(
+      await this.productsService.update(id, updateProductDto),
+    );
   }
 
   @Delete(':id')
   @ApiOkResponse({ type: ProductEntity })
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(id);
-  }
-
-  @Get('drafts')
-  findDrafts() {
-    return this.productsService.findDrafts();
+  async remove(@Param('id') id: string) {
+    return new ProductEntity(await this.productsService.remove(id));
   }
 }
