@@ -1,11 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { ProductEntity } from './entities/product.entity';
+import { ConnectionArgs } from './../page/connection-args.dto';
+import { Page } from './../page/page.dto';
+import { ApiPageResponse } from './../page/api-page-response.decorator';
 
 @Controller('products')
+@ApiExtraModels(Page)
 @ApiTags('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -30,6 +34,12 @@ export class ProductsController {
   async findDrafts() {
     const drafts = await this.productsService.findDrafts();
     return drafts.map((product) => new ProductEntity(product));
+  }
+
+  @Get('page')
+  @ApiPageResponse(ProductEntity)
+  async findPage(@Query() connectionArgs: ConnectionArgs) {
+    return this.productsService.findPage(connectionArgs);
   }
 
   @Get(':id')
